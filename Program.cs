@@ -195,7 +195,7 @@ namespace _11112022_ADO.NET_Exam
                 Console.WriteLine("2 - Авторизоваться ");
                 Console.WriteLine("3 - Получить cписок пользователей(без EF Core) ");
                 Console.WriteLine("4 - Получить список созданных групп, не используя EF Core ");
-                Console.WriteLine("5 - Удалить группу");
+                
 
                 Console.WriteLine("");
                 ch = Int32.Parse(Console.ReadLine());
@@ -219,6 +219,7 @@ namespace _11112022_ADO.NET_Exam
             Console.WriteLine("11 - Получение новых(непрочитанных) сообщений ");
             Console.WriteLine("12 - Показать список созданных групп ");
             Console.WriteLine("13 - Показать историю переписки в группе ");
+            Console.WriteLine("14 - Удалить группу ");
             Console.WriteLine("");
 
             int ch = Int32.Parse(Console.ReadLine());
@@ -312,7 +313,6 @@ namespace _11112022_ADO.NET_Exam
                     break;
                 case 12:
                     {
-
                         GetAllGroups();
                         BackToInternalMenu();
                     }
@@ -320,8 +320,17 @@ namespace _11112022_ADO.NET_Exam
                 case 13:
                     {
                    
-                        GetAllGroups();
+                        
                         GetGroupMessages();
+                        BackToInternalMenu();
+                    }
+                    break;
+                case 14:
+                    {
+                        GetAllGroupsNoEF();
+                        GetAllGroups();
+                        DeleteGroup();
+                        //GetNewMessages();
                         BackToInternalMenu();
                     }
                     break;
@@ -389,14 +398,7 @@ namespace _11112022_ADO.NET_Exam
                         BackToExternalMenu();
                     }
                     break;
-                case 5:
-                    {
-                        GetAllGroupsNoEF();
-                        DeleteGroup();
-                        //GetNewMessages();
-                        BackToExternalMenu();
-                    }
-                    break;
+                
             }
         }
         public static void GetMessageHistoryByUsername(string seconduser)
@@ -585,36 +587,6 @@ namespace _11112022_ADO.NET_Exam
                 {
                     Console.WriteLine(e.Message);
                 }
-
-
-                //using var dbContext = new ChatDbContext();
-                //var privatemessages = dbContext.PrivateMessages.ToList();
-
-                //if (privatemessages.Last().CreateDate != currentmessages.Last().CreateDate)
-                //{
-                //    foreach (var privatemessage in privatemessages)
-                //    {
-                //        Console.WriteLine("New Messeges recieved");
-                //        Console.WriteLine("");
-
-                //        if (privatemessage.ToUserId == usrd)
-                //        {
-                //            currentmessages.Add(privatemessage);
-                //            //Console.WriteLine($"id - {privatemessage.Id}\t CreateDate - {privatemessage.CreateDate}");
-                //            //Console.WriteLine($"FromUserId - {privatemessage.FromUserId}\t ToUserId- {privatemessage.ToUserId}");
-                //            //Console.WriteLine($"{privatemessage.Message}");
-                //        }
-                //        if (privatemessage.FromUserId == usrd)
-                //        {
-                //            currentmessages.Add(privatemessage);
-                //            //Console.WriteLine($"\t\t\t\tid - {privatemessage.Id}\t CreateDate - {privatemessage.CreateDate}");
-                //            //Console.WriteLine($"\t\t\t\tFromUserId - {privatemessage.FromUserId}\t ToUserId- {privatemessage.ToUserId}");
-                //            //Console.WriteLine($"\t\t\t\t{privatemessage.Message}");
-                //        }
-                //    }
-                //}
-
-
             }
             catch (Exception e)
             {
@@ -762,10 +734,14 @@ namespace _11112022_ADO.NET_Exam
         {
             using var dbContext = new ChatDbContext();
             var groups = dbContext.Groups.ToList();
+            int flag = 0;
             foreach (var group in groups)
             {
                 Console.WriteLine($"Id - {group.Id}\tName - {group.Name}\tOwner_Id - {group.Owner_Id}");
+                flag++;
             }
+            if (flag==0)
+                Console.WriteLine("no groups");
         }
         public static void DeleteGroup(string groupname)
         {
@@ -777,6 +753,31 @@ namespace _11112022_ADO.NET_Exam
                 {
                     dbContext.Groups.Remove(group);
                     dbContext.SaveChanges();
+                }
+            }
+        }
+        public static void DeleteGroup()
+        {
+            string groupstr = "";
+            while (groupstr.IsNullOrEmpty())
+            {
+                Console.WriteLine("enter group id you want to delete");
+                groupstr = Console.ReadLine();
+            }
+            int groupid = Int32.Parse(groupstr);
+            using var dbContext = new ChatDbContext();
+            var groups = dbContext.Groups.ToList();
+            foreach (var group in groups)
+            {
+                if (group.Id == groupid)
+                {
+                    dbContext.Groups.Remove(group);
+                    dbContext.SaveChanges();
+                    Console.WriteLine("group deleted");
+                }
+                else
+                {
+                    Console.WriteLine("unable to delete group");
                 }
             }
         }
@@ -826,29 +827,7 @@ namespace _11112022_ADO.NET_Exam
 
             Console.WriteLine($"group {groupname} created");
         }
-        public static void DeleteGroup()
-        {
-            string groupname = "";
-            while (groupname.IsNullOrEmpty())
-            {
-                groupname = Console.ReadLine();
-                Console.WriteLine("enter group name");
-            }
-            using var dbContext = new ChatDbContext();
-            var groups = dbContext.Groups.ToList();
-            foreach (var group in groups)
-            {
-                if (group.Name == groupname)
-                {
-                    dbContext.Groups.Remove(group);
-                    Console.WriteLine("group deleted");
-                }
-                else
-                {
-                    Console.WriteLine("unable to delete group");
-                }
-            }
-        }
+        
         public static void BlackListUserMessages()
         {
             string usertoblacklist = "";
